@@ -21,9 +21,18 @@ function getCss (css) {
   }
   return arr
 }
+
+function getJS (js) {
+  let arr = []
+  for (var i = 0; i < js.length; i++) {
+    arr.push(`./src/libs/${js[i]}.js`)
+  }
+  return arr
+}
 for(var i = 0; i < pages.length; i++) {
   let page = pages[i].page
   let css = getCss(pages[i].css)
+  let js = getJS(pages[i].js)
   gulp.task(page, function () {
     gulp.src(css)
     .pipe(reload({
@@ -32,18 +41,15 @@ for(var i = 0; i < pages.length; i++) {
     .pipe(less())
     .pipe(concat('index.css'))
     .pipe(gulp.dest('./dist/css'))
-    // .pipe(reload({stream: true}))
-    .pipe(browserSync.stream())
+
+    gulp.src(js)
+    .pipe(reload({
+      stream: true
+    }))
+    .pipe(concat('index.js'))
+    .pipe(gulp.dest('./dist/js'))
   })
 }
-
-// gulp.task('less', function () {
-//   gulp.src('./src/style/*.less')
-//   .pipe(less())
-//   .pipe(reload({
-//     stream: true
-//   }))
-// })
 
 gulp.task('pug', function () {
   gulp.src('./src/pages/*.pug')
@@ -56,6 +62,18 @@ gulp.task('pug', function () {
   }))
 })
 
+gulp.task('rem', function () {
+  gulp.src(['./src/libs/rem.js'])
+  .pipe(gulp.dest('./dist/js'))
+})
+
+gulp.task('swiperCss', function () {
+  gulp.src(['./src/style/swiper.css'])
+  .pipe(gulp.dest('./dist/css'))
+
+  gulp.src(['./src/libs/swiper.js'])
+  .pipe(gulp.dest('./dist/js'))
+})
 gulp.task('watchpug', function () {
   gulp.watch('./src/*/*.pug', ['pug'])
 })
@@ -77,5 +95,5 @@ gulp.task('clean', function () {
   .pipe(clean())
 })
 gulp.task('default', ['clean'], function () {
-  gulp.start('pug', 'watchpug', 'watchless', 'browserSync', ...getPages())
+  gulp.start('pug', 'watchpug', 'watchless', 'browserSync', 'rem', 'swiperCss', ...getPages())
 })
